@@ -1,0 +1,50 @@
+name: Build and Push Docker image to ACR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 🧾 1. Checkout the source code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ☕ 2. Set up Java
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      # 🛠️ 3. Make Gradle wrapper executable
+      - name: Ensure gradlew is executable
+        run: chmod +x gradlew
+
+      # ⚙️ 4. Build the Spring Boot JAR using Gradle
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      # # 🐳 5. Log in to Azure using service principal
+      # - name: Log in to Azure
+      #   uses: azure/login@v2
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # # 🧩 6. Log in to Azure Container Registry
+      # - name: Log in to Azure Container Registry
+      #   run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      # # 🧱 7. Build the Docker image
+      # - name: Build Docker image
+      #   run: |
+      #     docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/pluggable-workflow:latest .
+
+      # # 📤 8. Push the image to ACR
+      # - name: Push Docker image to ACR
+      #   run: |
+      #     docker push ${{ secrets.ACR_NAME }}.azurecr.io/pluggable-workflow:latest
